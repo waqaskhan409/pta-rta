@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: pta_rta_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: transport_db
+      MYSQL_USER: transport
+      MYSQL_PASSWORD: transport123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend:
+    build:
+      context: ./config
+      dockerfile: Dockerfile
+    container_name: pta_rta_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DB_ENGINE=django.db.backends.mysql
+      - DB_NAME=transport_db
+      - DB_USER=transport
+      - DB_PASSWORD=transport123
+      - DB_HOST=mysql
+      - DB_PORT=3306
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./config:/app
+    networks:
+      - pta_rta_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pta_rta_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - pta_rta_network
+
+volumes:
+  mysql_data:
+
+networks:
+  pta_rta_network:
+    driver: bridge
