@@ -35,11 +35,13 @@ import {
   Search as SearchIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  Receipt as ChalanIcon,
 } from '@mui/icons-material';
 import './App.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import SplashScreen from './components/SplashScreen';
+import NotificationCenter from './components/NotificationCenter';
 import Dashboard from './pages/Dashboard';
 import PermitList from './pages/PermitList';
 import NewPermit from './pages/NewPermit';
@@ -47,6 +49,10 @@ import Reports from './pages/Reports';
 import PermitDetails from './pages/PermitDetails';
 import PermitEdit from './pages/PermitEdit';
 import PermitSearch from './pages/PermitSearch';
+import ChalanList from './pages/ChalanList';
+import CreateChalan from './pages/CreateChalan';
+import ChalanDetail from './pages/ChalanDetail';
+import FeeManagement from './pages/FeeManagement';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import UserManagement from './pages/UserManagement';
@@ -55,6 +61,7 @@ import FeatureList from './pages/FeatureList';
 import TypesManagement from './pages/TypesManagement';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AboutUs from './pages/AboutUs';
+import Profile from './pages/Profile';
 
 const drawerWidth = 240;
 const collapsedDrawerWidth = 70;
@@ -81,8 +88,17 @@ function AppContent() {
     return userRole?.toLowerCase() === roleName.toLowerCase();
   };
 
-  // Check if user has reports role
-  const hasReportsRole = hasRole('reports') || isAdmin;
+  // Check if user has a specific feature
+  const hasFeature = (featureName) => {
+    if (!user || !user.features) return false;
+    return user.features.some(f =>
+      (f.name?.toLowerCase() === featureName.toLowerCase()) ||
+      (f.toLowerCase?.() === featureName.toLowerCase())
+    );
+  };
+
+  // Check if user can access reports - has report_view feature or is admin
+  const canAccessReports = hasFeature('report_view') || isAdmin;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -103,19 +119,22 @@ function AppContent() {
 
   const navigationItems = [
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/', adminOnly: false },
+    { label: 'My Profile', icon: <AccountIcon />, path: '/profile', adminOnly: false },
     { label: 'View Permits', icon: <PermitIcon />, path: '/permits', adminOnly: false },
-    { label: 'New Permit', icon: <AddIcon />, path: '/new-permit', adminOnly: false },
+    { label: 'New Permit', icon: <AddIcon />, path: '/new-permit', adminOnly: false, excludeEmployees: true },
     { label: 'Search Permits', icon: <SearchIcon />, path: '/search', adminOnly: false },
-    { label: 'Reports', icon: <ReportIcon />, path: '/reports', requiredRole: 'reports' },
+    { label: 'Reports', icon: <ReportIcon />, path: '/reports', requiredFeature: 'report_view' },
+    { label: 'Chalans', icon: <ChalanIcon />, path: '/chalans', adminOnly: false, onlyAdminOrEmployee: true },
     { label: 'Permit Types', icon: <VehicleIcon />, path: '/types', adminOnly: true },
     { label: 'Users', icon: <UserIcon />, path: '/users', adminOnly: true },
     { label: 'Roles', icon: <RoleIcon />, path: '/roles', adminOnly: true },
   ];
 
   const infoItems = [
-    { label: 'Feature List', icon: <AppsIcon />, path: '/features', adminOnly: false },
+    { label: 'Feature List', icon: <AppsIcon />, path: '/features', adminOnly: true },
     { label: 'About Us', icon: <InfoIcon />, path: '/about', adminOnly: false },
     { label: 'Privacy Policy', icon: <PrivacyIcon />, path: '/privacy', adminOnly: false },
+    { label: 'Logout', icon: <LogoutIcon />, action: 'logout', adminOnly: false },
   ];
 
   const drawer = (
@@ -143,13 +162,25 @@ function AppContent() {
       <List sx={{ flex: 1, overflow: 'auto' }}>
         {navigationItems
           .filter(item => {
+            // Only show for admins or employees if marked with onlyAdminOrEmployee
+            if (item.onlyAdminOrEmployee) {
+              return isAdmin || hasFeature('employee');
+            }
+            // Exclude employees from items marked with excludeEmployees
+            if (item.excludeEmployees && hasFeature('employee')) {
+              return false;
+            }
+            if (item.requiredFeature) {
+              return hasFeature(item.requiredFeature) || isAdmin;
+            }
             if (item.requiredRole) {
-              return hasRole(item.requiredRole);
+              return hasRole(item.requiredRole) || isAdmin;
             }
             return !item.adminOnly || isAdmin;
           })
           .map((item) => {
             const isActive = activePath === item.path;
+            const isSubItem = !!item.category; // Check if this is a sub-category item
             return (
               <ListItem key={item.path} disablePadding>
                 <ListItemButton
@@ -165,16 +196,19 @@ function AppContent() {
                   sx={{
                     backgroundColor: isActive ? '#1976d2' : 'transparent',
                     borderLeft: isActive ? '4px solid #1976d2' : '4px solid transparent',
-                    pl: isActive && drawerOpen ? 1.75 : drawerOpen ? 2 : 1.5,
+                    pl: isSubItem
+                      ? (isActive && drawerOpen ? 3.75 : drawerOpen ? 4 : 1.5)
+                      : (isActive && drawerOpen ? 1.75 : drawerOpen ? 2 : 1.5),
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     justifyContent: !drawerOpen ? 'center' : 'flex-start',
+                    opacity: isSubItem ? 0.85 : 1,
                     '& .MuiListItemIcon-root': {
-                      color: isActive ? 'white' : '#666',
+                      color: isActive ? 'white' : isSubItem ? '#999' : '#666',
                       transition: 'color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       minWidth: drawerOpen ? 40 : 0,
                     },
                     '& .MuiListItemText-primary': {
-                      color: isActive ? 'white' : '#333',
+                      color: isActive ? 'white' : isSubItem ? '#666' : '#333',
                       fontWeight: isActive ? 700 : 500,
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       display: drawerOpen ? 'block' : 'none',
@@ -204,54 +238,77 @@ function AppContent() {
         </Typography>
       )}
       <List>
-        {infoItems.map((item) => {
-          const isActive = activePath === item.path;
-          return (
-            <ListItem key={item.path} disablePadding>
-              <ListItemButton
-                component="a"
-                href={item.path}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActivePath(item.path);
-                  setMobileOpen(false);
-                  window.history.pushState(null, '', item.path);
-                  window.dispatchEvent(new PopStateEvent('popstate'));
-                }}
-                sx={{
-                  backgroundColor: isActive ? '#1976d2' : 'transparent',
-                  borderLeft: isActive ? '4px solid #1976d2' : '4px solid transparent',
-                  pl: isActive && drawerOpen ? 1.75 : drawerOpen ? 2 : 1.5,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  justifyContent: !drawerOpen ? 'center' : 'flex-start',
-                  '& .MuiListItemIcon-root': {
-                    color: isActive ? 'white' : '#666',
-                    transition: 'color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    minWidth: drawerOpen ? 40 : 0,
-                  },
-                  '& .MuiListItemText-primary': {
-                    color: isActive ? 'white' : '#333',
-                    fontWeight: isActive ? 700 : 500,
+        {infoItems
+          .filter(item => {
+            // Only show for admins or employees if marked with onlyAdminOrEmployee
+            if (item.onlyAdminOrEmployee) {
+              return isAdmin || hasFeature('employee');
+            }
+            // Exclude employees from items marked with excludeEmployees
+            if (item.excludeEmployees && hasFeature('employee')) {
+              return false;
+            }
+            if (item.requiredFeature) {
+              return hasFeature(item.requiredFeature) || isAdmin;
+            }
+            if (item.requiredRole) {
+              return hasRole(item.requiredRole) || isAdmin;
+            }
+            return !item.adminOnly || isAdmin;
+          })
+          .map((item) => {
+            const isActive = activePath === item.path;
+            const handleItemClick = (e) => {
+              e.preventDefault();
+              if (item.action === 'logout') {
+                handleLogout();
+              } else {
+                setActivePath(item.path);
+                setMobileOpen(false);
+                window.history.pushState(null, '', item.path);
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              }
+            };
+            return (
+              <ListItem key={item.path || item.action} disablePadding>
+                <ListItemButton
+                  component="a"
+                  href={item.path || '#'}
+                  onClick={handleItemClick}
+                  sx={{
+                    backgroundColor: isActive ? '#1976d2' : 'transparent',
+                    borderLeft: isActive ? '4px solid #1976d2' : '4px solid transparent',
+                    pl: isActive && drawerOpen ? 1.75 : drawerOpen ? 2 : 1.5,
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    display: drawerOpen ? 'block' : 'none',
-                  },
-                  '&:hover': {
-                    backgroundColor: isActive ? '#1565c0' : '#e3f2fd',
+                    justifyContent: !drawerOpen ? 'center' : 'flex-start',
                     '& .MuiListItemIcon-root': {
-                      color: isActive ? 'white' : '#1976d2',
+                      color: isActive ? 'white' : item.action === 'logout' ? '#f44336' : '#666',
+                      transition: 'color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      minWidth: drawerOpen ? 40 : 0,
                     },
-                  },
-                }}
-                title={!drawerOpen ? item.label : ''}
-              >
-                <ListItemIcon sx={{ minWidth: 40 }}>
-                  {item.icon}
-                </ListItemIcon>
-                {drawerOpen && <ListItemText primary={item.label} />}
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
+                    '& .MuiListItemText-primary': {
+                      color: isActive ? 'white' : item.action === 'logout' ? '#f44336' : '#333',
+                      fontWeight: isActive ? 700 : 500,
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      display: drawerOpen ? 'block' : 'none',
+                    },
+                    '&:hover': {
+                      backgroundColor: isActive ? '#1565c0' : item.action === 'logout' ? '#ffebee' : '#e3f2fd',
+                      '& .MuiListItemIcon-root': {
+                        color: isActive ? 'white' : item.action === 'logout' ? '#d32f2f' : '#1976d2',
+                      },
+                    },
+                  }}
+                  title={!drawerOpen ? item.label : ''}
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  {drawerOpen && <ListItemText primary={item.label} />}
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
       </List>
     </Box>
   );
@@ -286,7 +343,8 @@ function AppContent() {
                   <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 600, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                     PTA & RTA Permit Management System
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                    <NotificationCenter />
                     <IconButton
                       onClick={handleMenuOpen}
                       color="inherit"
@@ -311,6 +369,17 @@ function AppContent() {
                         </Typography>
                       </MenuItem>
                       <Divider />
+                      <MenuItem
+                        onClick={() => {
+                          handleMenuClose();
+                          setActivePath('/profile');
+                          window.history.pushState(null, '', '/profile');
+                          window.dispatchEvent(new PopStateEvent('popstate'));
+                        }}
+                      >
+                        <AccountIcon sx={{ mr: 1, fontSize: 20 }} />
+                        <Typography variant="body2">My Profile</Typography>
+                      </MenuItem>
                       <MenuItem onClick={handleLogout}>
                         <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
                         <Typography variant="body2">Logout</Typography>
@@ -388,6 +457,14 @@ function AppContent() {
                   }
                 />
                 <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/permits"
                   element={
                     <ProtectedRoute>
@@ -432,6 +509,40 @@ function AppContent() {
                   element={
                     <ProtectedRoute>
                       <PermitSearch />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Chalan Routes */}
+                <Route
+                  path="/chalans"
+                  element={
+                    <ProtectedRoute>
+                      <ChalanList />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/chalans/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreateChalan />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/chalans/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ChalanDetail />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/fee-management"
+                  element={
+                    <ProtectedRoute>
+                      <FeeManagement />
                     </ProtectedRoute>
                   }
                 />

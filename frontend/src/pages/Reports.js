@@ -93,6 +93,7 @@ const calculateMetric = (stats) => {
 
 const Reports = () => {
   const [tabValue, setTabValue] = useState(0);
+  const [dashboardTabValue, setDashboardTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -326,345 +327,360 @@ const Reports = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <>
             {/* Header with Summary Stats */}
+
+
+            {/* Dashboard Sub-Tabs */}
             <Grid item xs={12}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1, color: '#0f172a' }}>
-                📊 Dashboard Overview
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500 }}>
-                Real-time permit management metrics and analytics
-              </Typography>
+              <Paper sx={{ mb: 3 }}>
+                <Tabs
+                  value={dashboardTabValue}
+                  onChange={(e, newValue) => setDashboardTabValue(newValue)}
+                  sx={{
+                    borderBottom: '1px solid #ddd',
+                    '& .MuiTab-root': {
+                      textTransform: 'none',
+                      fontSize: '0.95rem',
+                      fontWeight: 500,
+                    },
+                  }}
+                >
+                  <Tab label="📊 Overview" />
+                  <Tab label="📈 Analytics" />
+                </Tabs>
+              </Paper>
             </Grid>
 
-            {/* Line Break */}
-            <Grid item xs={12}></Grid>
+            {/* Overview Tab: KPI Cards and Performance Metrics */}
+            {dashboardTabValue === 0 && (
+              <>
 
-            {/* KPI Cards - Row 1 */}
-            <Grid item xs={12} sm={6} md={3}>
-              <KPICard
-                title="Total Permits"
-                value={detailedStats?.overall_stats?.total_permits ?? 0}
-                subtext={`${metrics?.averagePermitsPerDay || '0'} per day (30d avg)`}
-                icon={AnalyticsIcon}
-                gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                metrics={{
-                  'This Month': detailedStats?.recent_activity?.created_last_30_days ?? 0,
-                  'Growth': '12%'
-                }}
-              />
-            </Grid>
+                {/* KPI Cards - Row 1 */}
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPICard
+                    title="Total Permits"
+                    value={detailedStats?.overall_stats?.total_permits ?? 0}
+                    subtext={`${metrics?.averagePermitsPerDay || '0'} per day (30d avg)`}
+                    icon={AnalyticsIcon}
+                    gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    metrics={{
+                      'This Month': detailedStats?.recent_activity?.created_last_30_days ?? 0,
+                      'Growth': '12%'
+                    }}
+                  />
+                </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <KPICard
-                title="Active Permits"
-                value={detailedStats?.overall_stats?.active_permits ?? 0}
-                subtext={`${metrics?.activePercentage || 0}% of total`}
-                trend={8}
-                icon={CheckCircleIcon}
-                gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"
-                metrics={{
-                  'Completion Rate': `${metrics?.completionRate || 0}%`,
-                  'Status': 'Healthy'
-                }}
-              />
-            </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPICard
+                    title="Active Permits"
+                    value={detailedStats?.overall_stats?.active_permits ?? 0}
+                    subtext={`${metrics?.activePercentage || 0}% of total`}
+                    trend={8}
+                    icon={CheckCircleIcon}
+                    gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"
+                    metrics={{
+                      'Completion Rate': `${metrics?.completionRate || 0}%`,
+                      'Status': 'Healthy'
+                    }}
+                  />
+                </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <KPICard
-                title="Pending Permits"
-                value={detailedStats?.overall_stats?.pending_permits ?? 0}
-                subtext={`${metrics?.pendingPercentage || 0}% of total`}
-                trend={-5}
-                icon={PendingIcon}
-                gradient="linear-gradient(135deg, #f7971e 0%, #ffd200 100%)"
-                metrics={{
-                  'Avg Wait': '3 days',
-                  'Oldest': '15 days'
-                }}
-              />
-            </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPICard
+                    title="Pending Permits"
+                    value={detailedStats?.overall_stats?.pending_permits ?? 0}
+                    subtext={`${metrics?.pendingPercentage || 0}% of total`}
+                    trend={-5}
+                    icon={PendingIcon}
+                    gradient="linear-gradient(135deg, #f7971e 0%, #ffd200 100%)"
+                    metrics={{
+                      'Avg Wait': '3 days',
+                      'Oldest': '15 days'
+                    }}
+                  />
+                </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <KPICard
-                title="Expired Permits"
-                value={detailedStats?.overall_stats?.expired_permits ?? 0}
-                subtext={`${metrics?.expiredPercentage || 0}% of total`}
-                trend={2}
-                icon={ExpiredIcon}
-                gradient="linear-gradient(135deg, #eb3349 0%, #f45c43 100%)"
-                metrics={{
-                  'Action': 'Review needed',
-                  'Alert': 'High priority'
-                }}
-              />
-            </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPICard
+                    title="Expired Permits"
+                    value={detailedStats?.overall_stats?.expired_permits ?? 0}
+                    subtext={`${metrics?.expiredPercentage || 0}% of total`}
+                    trend={2}
+                    icon={ExpiredIcon}
+                    gradient="linear-gradient(135deg, #eb3349 0%, #f45c43 100%)"
+                    metrics={{
+                      'Action': 'Review needed',
+                      'Alert': 'High priority'
+                    }}
+                  />
+                </Grid>
 
-            {/* KPI Cards - Row 2 */}
-            <Grid item xs={12} sm={6} md={3}>
-              <KPICard
-                title="Expiring Soon (30d)"
-                value={detailedStats?.recent_activity?.expiring_in_30_days ?? 0}
-                subtext="Requires attention"
-                trend={3}
-                icon={ExpiringSoonIcon}
-                gradient="linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%)"
-                metrics={{
-                  'Earliest': 'Next week',
-                  'Latest': 'In 30 days'
-                }}
-              />
-            </Grid>
+                {/* KPI Cards - Row 2 */}
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPICard
+                    title="Expiring Soon (30d)"
+                    value={detailedStats?.recent_activity?.expiring_in_30_days ?? 0}
+                    subtext="Requires attention"
+                    trend={3}
+                    icon={ExpiringSoonIcon}
+                    gradient="linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%)"
+                    metrics={{
+                      'Earliest': 'Next week',
+                      'Latest': 'In 30 days'
+                    }}
+                  />
+                </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <KPICard
-                title="Recently Created"
-                value={detailedStats?.recent_activity?.created_last_30_days ?? 0}
-                subtext="Last 30 days"
-                trend={12}
-                icon={NewIcon}
-                gradient="linear-gradient(135deg, #00b09b 0%, #96c93d 100%)"
-                metrics={{
-                  'This Week': Math.round((detailedStats?.recent_activity?.created_last_30_days ?? 0) / 4),
-                  'Trend': 'Increasing'
-                }}
-              />
-            </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPICard
+                    title="Recently Created"
+                    value={detailedStats?.recent_activity?.created_last_30_days ?? 0}
+                    subtext="Last 30 days"
+                    trend={12}
+                    icon={NewIcon}
+                    gradient="linear-gradient(135deg, #00b09b 0%, #96c93d 100%)"
+                    metrics={{
+                      'This Week': Math.round((detailedStats?.recent_activity?.created_last_30_days ?? 0) / 4),
+                      'Trend': 'Increasing'
+                    }}
+                  />
+                </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <KPICard
-                title="Recently Modified"
-                value={detailedStats?.recent_activity?.modified_last_30_days ?? 0}
-                subtext="Last 30 days"
-                trend={-2}
-                icon={TrendingUpIcon}
-                gradient="linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)"
-                metrics={{
-                  'This Week': Math.round((detailedStats?.recent_activity?.modified_last_30_days ?? 0) / 4),
-                  'Activity': 'Moderate'
-                }}
-              />
-            </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPICard
+                    title="Recently Modified"
+                    value={detailedStats?.recent_activity?.modified_last_30_days ?? 0}
+                    subtext="Last 30 days"
+                    trend={-2}
+                    icon={TrendingUpIcon}
+                    gradient="linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)"
+                    metrics={{
+                      'This Week': Math.round((detailedStats?.recent_activity?.modified_last_30_days ?? 0) / 4),
+                      'Activity': 'Moderate'
+                    }}
+                  />
+                </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <KPICard
-                title="Cancelled Permits"
-                value={detailedStats?.overall_stats?.cancelled_permits ?? 0}
-                subtext={`${metrics?.cancelledPercentage}% of total`}
-                trend={-8}
-                icon={CancelIcon}
-                gradient="linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%)"
-                metrics={{
-                  'Rate': '5% of issued',
-                  'Trend': 'Decreasing'
-                }}
-              />
-            </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <KPICard
+                    title="Cancelled Permits"
+                    value={detailedStats?.overall_stats?.cancelled_permits ?? 0}
+                    subtext={`${metrics?.cancelledPercentage}% of total`}
+                    trend={-8}
+                    icon={CancelIcon}
+                    gradient="linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%)"
+                    metrics={{
+                      'Rate': '5% of issued',
+                      'Trend': 'Decreasing'
+                    }}
+                  />
+                </Grid>
 
-            {/* Performance Metrics Section */}
-            <Grid item xs={12}>
-              <Card sx={{ background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', mb: 3 }}>
-                <CardHeader
-                  title="📈 Key Performance Indicators"
-                  sx={{ bgcolor: 'transparent', pb: 1 }}
-                />
-                <CardContent>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={4}>
-                      <Box>
-                        <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
-                          Completion Rate
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={metrics?.completionRate || 0}
-                            sx={{
-                              flex: 1,
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: '#e0e0e0',
-                              '& .MuiLinearProgress-bar': {
-                                background: 'linear-gradient(90deg, #4caf50 0%, #45a049 100%)',
-                              }
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: 45 }}>
-                            {metrics?.completionRate}%
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Grid>
+                {/* Performance Metrics Section */}
+                <Grid item xs={12}>
+                  <Card sx={{ background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)', mb: 3 }}>
+                    <CardHeader
+                      title="📈 Key Performance Indicators"
+                      sx={{ bgcolor: 'transparent', pb: 1 }}
+                    />
+                    <CardContent>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6} md={4}>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
+                              Completion Rate
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={metrics?.completionRate || 0}
+                                sx={{
+                                  flex: 1,
+                                  height: 8,
+                                  borderRadius: 4,
+                                  backgroundColor: '#e0e0e0',
+                                  '& .MuiLinearProgress-bar': {
+                                    background: 'linear-gradient(90deg, #4caf50 0%, #45a049 100%)',
+                                  }
+                                }}
+                              />
+                              <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: 45 }}>
+                                {metrics?.completionRate}%
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Grid>
 
-                    <Grid item xs={12} sm={6} md={4}>
-                      <Box>
-                        <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
-                          Active Permits Ratio
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={metrics?.activePercentage || 0}
-                            sx={{
-                              flex: 1,
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: '#e0e0e0',
-                              '& .MuiLinearProgress-bar': {
-                                background: 'linear-gradient(90deg, #2196f3 0%, #1976d2 100%)',
-                              }
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: 45 }}>
-                            {metrics?.activePercentage}%
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Grid>
+                        <Grid item xs={12} sm={6} md={4}>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
+                              Active Permits Ratio
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={metrics?.activePercentage || 0}
+                                sx={{
+                                  flex: 1,
+                                  height: 8,
+                                  borderRadius: 4,
+                                  backgroundColor: '#e0e0e0',
+                                  '& .MuiLinearProgress-bar': {
+                                    background: 'linear-gradient(90deg, #2196f3 0%, #1976d2 100%)',
+                                  }
+                                }}
+                              />
+                              <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: 45 }}>
+                                {metrics?.activePercentage}%
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Grid>
 
-                    <Grid item xs={12} sm={6} md={4}>
-                      <Box>
-                        <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
-                          Pending Pipeline
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={Math.min(metrics?.pendingPercentage || 0, 100)}
-                            sx={{
-                              flex: 1,
-                              height: 8,
-                              borderRadius: 4,
-                              backgroundColor: '#e0e0e0',
-                              '& .MuiLinearProgress-bar': {
-                                background: 'linear-gradient(90deg, #ff9800 0%, #f57c00 100%)',
-                              }
-                            }}
-                          />
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: 45 }}>
-                            {metrics?.pendingPercentage}%
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
+                        <Grid item xs={12} sm={6} md={4}>
+                          <Box>
+                            <Typography variant="caption" sx={{ color: '#475569', fontWeight: 600 }}>
+                              Pending Pipeline
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={Math.min(metrics?.pendingPercentage || 0, 100)}
+                                sx={{
+                                  flex: 1,
+                                  height: 8,
+                                  borderRadius: 4,
+                                  backgroundColor: '#e0e0e0',
+                                  '& .MuiLinearProgress-bar': {
+                                    background: 'linear-gradient(90deg, #ff9800 0%, #f57c00 100%)',
+                                  }
+                                }}
+                              />
+                              <Typography variant="body2" sx={{ fontWeight: 'bold', minWidth: 45 }}>
+                                {metrics?.pendingPercentage}%
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </>
+            )}
 
-            {/* Charts Section Header */}
-            <Grid item xs={12}></Grid>
-            <Grid item xs={12}>
-              <Box sx={{ mt: 2, mb: 3, borderBottom: '2px solid #e0e0e0', pb: 1 }}>
-                <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>
-                  📊 Advanced Analytics
-                </Typography>
-              </Box>
-            </Grid>
+            {/* Analytics Tab: Charts and Visualizations */}
+            {dashboardTabValue === 1 && (
+              <>
+                {/* Charts Section Header */}
+                <Grid item xs={12}></Grid>
 
-            {/* Permits by Status Pie Chart - Full Width */}
-            <Grid item xs={12}>
-              <Card sx={{ mb: 3 }}>
-                <CardHeader title="Permits by Status Distribution" sx={{ bgcolor: '#f5f5f5' }} />
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                      <Pie
-                        data={[
-                          { name: 'Active', value: detailedStats?.overall_stats?.active_permits || 0 },
-                          { name: 'Expired', value: detailedStats?.overall_stats?.expired_permits || 0 },
-                          { name: 'Cancelled', value: detailedStats?.overall_stats?.cancelled_permits || 0 },
-                          { name: 'Pending', value: detailedStats?.overall_stats?.pending_permits || 0 },
-                          { name: 'Inactive', value: detailedStats?.overall_stats?.inactive_permits || 0 },
-                        ].filter(item => item.value > 0)}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={true}
-                        label={({ name, value, percent }) => `${name}: ${value}`}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {COLORS.map((color, index) => (
-                          <Cell key={`cell-${index}`} fill={color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </Grid>
+                {/* Permits by Status Pie Chart - Full Width */}
+                <Grid item xs={12}>
+                  <Card sx={{ mb: 3 }}>
+                    <CardHeader title="Permits by Status Distribution" sx={{ bgcolor: '#f5f5f5' }} />
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name: 'Active', value: detailedStats?.overall_stats?.active_permits || 0 },
+                              { name: 'Expired', value: detailedStats?.overall_stats?.expired_permits || 0 },
+                              { name: 'Cancelled', value: detailedStats?.overall_stats?.cancelled_permits || 0 },
+                              { name: 'Pending', value: detailedStats?.overall_stats?.pending_permits || 0 },
+                              { name: 'Inactive', value: detailedStats?.overall_stats?.inactive_permits || 0 },
+                            ].filter(item => item.value > 0)}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={true}
+                            label={({ name, value, percent }) => `${name}: ${value}`}
+                            outerRadius={100}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {COLORS.map((color, index) => (
+                              <Cell key={`cell-${index}`} fill={color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </Grid>
 
-            {/* Authority Breakdown - Full Width */}
-            <Grid item xs={12}>
-              <Card sx={{ mb: 3 }}>
-                <CardHeader title="Authority Distribution (PTA vs RTA)" sx={{ bgcolor: '#f5f5f5' }} />
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart
-                      data={detailedStats?.by_authority ? Object.entries(detailedStats.by_authority).map(([key, value]) => ({ name: key, permits: value })) : []}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="permits" fill="#667eea" name="Number of Permits" radius={[8, 8, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </Grid>
+                {/* Authority Breakdown - Full Width */}
+                <Grid item xs={12}>
+                  <Card sx={{ mb: 3 }}>
+                    <CardHeader title="Authority Distribution (PTA vs RTA)" sx={{ bgcolor: '#f5f5f5' }} />
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={350}>
+                        <BarChart
+                          data={detailedStats?.by_authority ? Object.entries(detailedStats.by_authority).map(([key, value]) => ({ name: key, permits: value })) : []}
+                          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="permits" fill="#667eea" name="Number of Permits" radius={[8, 8, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </Grid>
 
-            {/* Permit Types Distribution - Full Width */}
-            <Grid item xs={12}>
-              <Card sx={{ mb: 3 }}>
-                <CardHeader title="Permit Types Distribution" sx={{ bgcolor: '#f5f5f5' }} />
-                <CardContent>
-                  <ResponsiveContainer width="350" height={350}>
-                    <BarChart
-                      data={detailedStats?.by_permit_type ? Object.entries(detailedStats.by_permit_type).map(([key, value]) => ({ name: key, permits: value })) : []}
-                      layout="vertical"
-                      margin={{ left: 10, right: 10, top: 20, bottom: 20 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis dataKey="name" type="category" width={140} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="permits" fill="#11998e" name="Number of Permits" radius={[0, 8, 8, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </Grid>
+                {/* Permit Types Distribution - Full Width */}
+                <Grid item xs={12}>
+                  <Card sx={{ mb: 3 }}>
+                    <CardHeader title="Permit Types Distribution" sx={{ bgcolor: '#f5f5f5' }} />
+                    <CardContent>
+                      <ResponsiveContainer width="350" height={350}>
+                        <BarChart
+                          data={detailedStats?.by_permit_type ? Object.entries(detailedStats.by_permit_type).map(([key, value]) => ({ name: key, permits: value })) : []}
+                          layout="vertical"
+                          margin={{ left: 10, right: 10, top: 20, bottom: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" />
+                          <YAxis dataKey="name" type="category" width={140} />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="permits" fill="#11998e" name="Number of Permits" radius={[0, 8, 8, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </Grid>
 
-            {/* Vehicle Types Distribution - Full Width */}
-            <Grid item xs={12}>
-              <Card>
-                <CardHeader title="Vehicle Types Distribution" sx={{ bgcolor: '#f5f5f5' }} />
-                <CardContent>
-                  <ResponsiveContainer width="350" height={350}>
-                    <BarChart
-                      data={detailedStats?.by_vehicle_type ? Object.entries(detailedStats.by_vehicle_type).map(([key, value]) => ({ name: key, permits: value })) : []}
-                      layout="vertical"
-                      margin={{ left: 10, right: 10, top: 20, bottom: 20 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
-                      <YAxis dataKey="name" type="category" width={140} />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="permits" fill="#f7971e" name="Number of Permits" radius={[0, 8, 8, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+                {/* Vehicle Types Distribution - Full Width */}
+                <Grid item xs={12}>
+                  <Card>
+                    <CardHeader title="Vehicle Types Distribution" sx={{ bgcolor: '#f5f5f5' }} />
+                    <CardContent>
+                      <ResponsiveContainer width="350" height={350}>
+                        <BarChart
+                          data={detailedStats?.by_vehicle_type ? Object.entries(detailedStats.by_vehicle_type).map(([key, value]) => ({ name: key, permits: value })) : []}
+                          layout="vertical"
+                          margin={{ left: 10, right: 10, top: 20, bottom: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis type="number" />
+                          <YAxis dataKey="name" type="category" width={140} />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="permits" fill="#f7971e" name="Number of Permits" radius={[0, 8, 8, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </>
+            )}
+          </>
         )}
       </Box>
     );

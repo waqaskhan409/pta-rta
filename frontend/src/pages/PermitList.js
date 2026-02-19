@@ -24,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/apiClient';
 import PermitModal from '../components/PermitModal';
+import { isColumnVisible, getVisibleColumnCount, canEditThisPermit, canEditPermits, hasFeature } from '../utils/permissions';
 import '../styles/page.css';
 
 function PermitList() {
@@ -57,19 +58,8 @@ function PermitList() {
   // Track if we've initialized the assigned filter to avoid resetting on every render
   const initializedAssignedFilterRef = React.useRef(false);
 
-  // Check if user has permission to edit permits
-  const canEditPermits = () => {
-    if (!user) return false;
-    // Admins (is_staff) can always edit
-    if (user.is_staff) return true;
-    // Check if user has 'permit_edit' feature
-    if (user.features && Array.isArray(user.features)) {
-      return user.features.some(feature => feature.name === 'permit_edit');
-    }
-    return false;
-  };
-
-  const hasEditPermission = canEditPermits();
+  // Permission system using backend-provided features
+  const hasEditPermission = canEditPermits(user);
 
   const fetchPermitTypes = useCallback(async () => {
     try {
@@ -85,14 +75,14 @@ function PermitList() {
 
   const fetchAssignedUsers = useCallback(async () => {
     try {
-      const response = await apiClient.get('/permits/all-employees/');
+      const response = await apiClient.get('/permits/all_employees/');
       let users = response.data.results || response.data || [];
-      
+
       // Ensure users is an array
       if (!Array.isArray(users)) {
         users = [];
       }
-      
+
       console.log('All employees fetched:', users);
       setAssignedUsers(users);
     } catch (err) {
@@ -195,9 +185,13 @@ function PermitList() {
       fetchPermits(0);
       fetchPermitTypes();
       fetchAssignedUsers();
-      // Set assigned filter to current user by default ONLY on first login
+      // Set assigned filter to current user by default ONLY on first login (and only if they're an employee)
       if (!initializedAssignedFilterRef.current) {
-        setAssignedFilter(String(user.id));
+        if (hasFeature(user, 'employee') || user?.is_staff) {
+          setAssignedFilter(String(user.id));
+        } else {
+          setAssignedFilter('all');
+        }
         initializedAssignedFilterRef.current = true;
       }
     } else {
@@ -242,7 +236,7 @@ function PermitList() {
     }
 
     // Check if permit can be edited by current user (assigned role check)
-    const isCurrentUserAssigned = canEditThisPermit(permit);
+    const isCurrentUserAssigned = canUserEditPermit(permit);
     if (!isCurrentUserAssigned) {
       setError(`Only ${permit.assigned_to_role?.toUpperCase() || 'assigned role'} users can edit this permit`);
       return;
@@ -258,23 +252,9 @@ function PermitList() {
     }
   };
 
-  const canEditThisPermit = (permit) => {
-    // Admins can always edit
-    if (user?.is_staff) return true;
-
-    // Check if permit is assigned
-    if (!permit.assigned_to) {
-      return false;
-    }
-
-    // Check if user's role matches the assigned role
-    // Handle case where user.role might be an object {id, name} or a string
-    const userRole = (user?.role?.name || user?.role || '').toLowerCase().trim();
-    const assignedRole = (permit.assigned_to_role || '').toLowerCase().trim();
-
-    console.log('[PermitList] canEditThisPermit - Role comparison:', { userRole, assignedRole, match: userRole === assignedRole });
-
-    return userRole === assignedRole && userRole && assignedRole;
+  const canUserEditPermit = (permit) => {
+    // Use the imported permission utility - wrapper that passes current user
+    return canEditThisPermit(user, permit);
   };
 
   const handleViewHistory = async (permit) => {
@@ -462,24 +442,26 @@ function PermitList() {
             ))}
           </TextField>
 
-          {/* Assigned To Filter */}
-          <TextField
-            label="Assigned To"
-            select
-            SelectProps={{ native: true }}
-            value={assignedFilter}
-            onChange={(e) => setAssignedFilter(e.target.value)}
-            size="small"
-            fullWidth
-          >
-            <option value="all">All Assignments</option>
-            <option value="unassigned">Unassigned</option>
-            {assignedUsers.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.full_name} ({user.role.toUpperCase()})
-              </option>
-            ))}
-          </TextField>
+          {/* Assigned To Filter - Only show if user is employee */}
+          {(hasFeature(user, 'employee') || user?.is_staff) && (
+            <TextField
+              label="Assigned To"
+              select
+              SelectProps={{ native: true }}
+              value={assignedFilter}
+              onChange={(e) => setAssignedFilter(e.target.value)}
+              size="small"
+              fullWidth
+            >
+              <option value="all">All Assignments</option>
+              <option value="unassigned">Unassigned</option>
+              {assignedUsers.map((user) => (
+                <option key={user.id} value={String(user.id)}>
+                  {user.full_name} ({user.role.toUpperCase()})
+                </option>
+              ))}
+            </TextField>
+          )}
         </Box>
 
         {/* Active Filters Display */}
@@ -515,7 +497,7 @@ function PermitList() {
                 size="small"
               />
             )}
-            {assignedFilter !== 'all' && String(assignedFilter) !== String(user?.id) && (
+            {(hasFeature(user, 'employee') || user?.is_staff) && assignedFilter !== 'all' && String(assignedFilter) !== String(user?.id) && (
               <Chip
                 label={`Assigned: ${assignedFilter === 'unassigned' ? 'Unassigned' : assignedFilter}`}
                 onDelete={() => setAssignedFilter(String(user?.id))}
@@ -549,11 +531,11 @@ function PermitList() {
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Authority</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Type</TableCell>
               <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Assigned To</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Last Action</TableCell>
+              {isColumnVisible(user, 'assignedTo') && <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Assigned To</TableCell>}
+              {isColumnVisible(user, 'lastAction') && <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Last Action</TableCell>}
               <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Renewal Status</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Changes</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Modified</TableCell>
+              {isColumnVisible(user, 'changes') && <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Changes</TableCell>}
+              {isColumnVisible(user, 'modified') && <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Modified</TableCell>}
               <TableCell sx={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -581,31 +563,35 @@ function PermitList() {
                         size="small"
                       />
                     </TableCell>
-                    <TableCell>
-                      {permit.assigned_to_full_name ? (
-                        <Tooltip title={`Assigned to: ${permit.assigned_to_full_name}`}>
+                    {isColumnVisible(user, 'assignedTo') && (
+                      <TableCell>
+                        {permit.assigned_to_full_name ? (
+                          <Tooltip title={`Assigned to: ${permit.assigned_to_full_name}`}>
+                            <Chip
+                              label={permit.assigned_to_full_name}
+                              variant="outlined"
+                              size="small"
+                              color="primary"
+                            />
+                          </Tooltip>
+                        ) : (
+                          <span style={{ fontSize: '0.85rem', color: '#999' }}>Unassigned</span>
+                        )}
+                      </TableCell>
+                    )}
+                    {isColumnVisible(user, 'lastAction') && (
+                      <TableCell>
+                        <Tooltip title={new Date(lastAction.time).toLocaleString()}>
                           <Chip
-                            label={permit.assigned_to_full_name}
+                            icon={<HistoryIcon />}
+                            label={lastAction.action}
+                            color={getActionColor(lastAction.action)}
                             variant="outlined"
                             size="small"
-                            color="primary"
                           />
                         </Tooltip>
-                      ) : (
-                        <span style={{ fontSize: '0.85rem', color: '#999' }}>Unassigned</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip title={new Date(lastAction.time).toLocaleString()}>
-                        <Chip
-                          icon={<HistoryIcon />}
-                          label={lastAction.action}
-                          color={getActionColor(lastAction.action)}
-                          variant="outlined"
-                          size="small"
-                        />
-                      </Tooltip>
-                    </TableCell>
+                      </TableCell>
+                    )}
                     <TableCell sx={{ textAlign: 'center' }}>
                       {permit.has_previous_permits ? (
                         <Tooltip title={`This permit is a renewal from expired permit${permit.previous_permits?.length > 1 ? 's' : ''}: ${permit.previous_permits?.map(p => p.permit_number).join(', ') || 'Unknown'}`}>
@@ -630,39 +616,41 @@ function PermitList() {
                         />
                       )}
                     </TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}>
-                      <Badge
-                        badgeContent={historyCount}
-                        color="primary"
-                        sx={{
-                          '& .MuiBadge-badge': {
-                            fontSize: '0.75rem',
-                            height: '20px',
-                            minWidth: '20px',
-                            borderRadius: '50%',
-                          }
-                        }}
-                      >
-                        <Chip
-                          label="History"
-                          size="small"
-                          variant="outlined"
+                    {isColumnVisible(user, 'changes') && (
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <Badge
+                          badgeContent={historyCount}
                           color="primary"
-                          onClick={() => handleViewHistory(permit)}
                           sx={{
-                            minWidth: '80px',
-                            cursor: 'pointer',
-                            '&:hover': {
-                              backgroundColor: '#e3f2fd',
-                              fontWeight: 'bold'
+                            '& .MuiBadge-badge': {
+                              fontSize: '0.75rem',
+                              height: '20px',
+                              minWidth: '20px',
+                              borderRadius: '50%',
                             }
                           }}
-                        />
-                      </Badge>
-                    </TableCell>
-                    <TableCell sx={{ fontSize: '0.85rem', color: '#666' }}>
+                        >
+                          <Chip
+                            label="History"
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            onClick={() => handleViewHistory(permit)}
+                            sx={{
+                              minWidth: '80px',
+                              cursor: 'pointer',
+                              '&:hover': {
+                                backgroundColor: '#e3f2fd',
+                                fontWeight: 'bold'
+                              }
+                            }}
+                          />
+                        </Badge>
+                      </TableCell>
+                    )}
+                    {isColumnVisible(user, 'modified') && <TableCell sx={{ fontSize: '0.85rem', color: '#666' }}>
                       {formatTimeAgo(lastAction.time)}
-                    </TableCell>
+                    </TableCell>}
                     <TableCell sx={{ textAlign: 'center' }}>
                       <Tooltip title="View Details">
                         <Button
@@ -706,7 +694,7 @@ function PermitList() {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={11} sx={{ textAlign: 'center', py: 4 }}>
+                <TableCell colSpan={getVisibleColumnCount(user)} sx={{ textAlign: 'center', py: 4 }}>
                   <Typography variant="body1" color="textSecondary">
                     No permits found
                   </Typography>

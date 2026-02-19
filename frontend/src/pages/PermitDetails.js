@@ -115,18 +115,12 @@ const PermitDetails = () => {
 
     setReapplyLoading(true);
     try {
-      const response = await apiClient.post(`/permits/${permitId}/reapply_for_expired/`, {
-        valid_from: newValidFrom,
-        valid_to: newValidTo,
-      });
-
-      // Show success and navigate to the new permit
+      // Navigate to NewPermit wizard with the expired permit data
       setReapplyDialogOpen(false);
-      alert(`New permit created successfully: ${response.data.permit_number}`);
-      navigate(`/permit-details/${response.data.id}`);
+      navigate(`/new-permit?renewalPermitId=${permitId}&validFrom=${newValidFrom}&validTo=${newValidTo}`);
     } catch (err) {
-      console.error('Failed to reapply for permit:', err);
-      setReapplyError(err.response?.data?.error || 'Failed to create renewal permit. Please try again.');
+      console.error('Failed to navigate to renewal permit:', err);
+      setReapplyError('Failed to start renewal permit. Please try again.');
     } finally {
       setReapplyLoading(false);
     }

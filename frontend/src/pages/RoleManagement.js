@@ -41,6 +41,7 @@ const RoleManagement = () => {
   const [newRoleDescription, setNewRoleDescription] = useState('');
   const [selectedFeaturesForRole, setSelectedFeaturesForRole] = useState([]);
   const [expandedRole, setExpandedRole] = useState(null);
+  const [selectedFeatureForRole, setSelectedFeatureForRole] = useState({});
 
   useEffect(() => {
     fetchRoles();
@@ -96,7 +97,8 @@ const RoleManagement = () => {
       fetchRoles();
     } catch (err) {
       console.error('Error creating role:', err);
-      setError(err.response?.data?.detail || 'Failed to create role');
+      const errorMsg = err.response?.data?.error || err.response?.data?.detail || err.message || 'Failed to create role';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -105,14 +107,23 @@ const RoleManagement = () => {
   const handleAddFeature = async (roleId, featureId) => {
     try {
       setLoading(true);
+      setError('');
+      const fId = parseInt(featureId, 10);
+
+      if (!fId || isNaN(fId)) {
+        setError('Please select a valid feature');
+        setLoading(false);
+        return;
+      }
+
       await apiClient.post(`/roles/${roleId}/add-feature/`, {
-        feature_id: featureId,
+        feature_id: fId,
       });
       setSuccess('Feature added successfully');
       // Update local state instead of re-fetching all roles
       setRoles(roles.map(role => {
         if (role.id === roleId) {
-          const featureToAdd = features.find(f => f.id === parseInt(featureId));
+          const featureToAdd = features.find(f => f.id === fId);
           return {
             ...role,
             features: [...role.features, featureToAdd]
@@ -120,9 +131,12 @@ const RoleManagement = () => {
         }
         return role;
       }));
+      // Clear selection
+      setSelectedFeatureForRole(prev => ({ ...prev, [roleId]: '' }));
     } catch (err) {
       console.error('Error adding feature:', err);
-      setError('Failed to add feature');
+      const errorMsg = err.response?.data?.error || err.message || 'Failed to add feature';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -148,7 +162,8 @@ const RoleManagement = () => {
         }));
       } catch (err) {
         console.error('Error removing feature:', err);
-        setError('Failed to remove feature');
+        const errorMsg = err.response?.data?.error || err.message || 'Failed to remove feature';
+        setError(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -292,37 +307,55 @@ const RoleManagement = () => {
                       <Divider sx={{ my: 2 }} />
                       <Typography
                         variant="subtitle2"
-                        sx={{ fontWeight: 'bold', mb: 1 }}
+                        sx={{ fontWeight: 'bold', mb: 2 }}
                       >
                         Add Feature:
                       </Typography>
-                      <TextField
-                        select
-                        SelectProps={{ native: true }}
-                        fullWidth
-                        size="small"
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          if (e.target.value) {
-                            handleAddFeature(role.id, e.target.value);
-                            e.target.value = '';
-                          }
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        defaultValue=""
-                      >
-                        <option value="">Select a feature</option>
-                        {features.map((feature) => {
-                          const isAssigned = role.features.some(
-                            (f) => f.id === feature.id
-                          );
-                          return !isAssigned ? (
-                            <option key={feature.id} value={feature.id}>
-                              {feature.display_name}
-                            </option>
-                          ) : null;
-                        })}
-                      </TextField>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <TextField
+                          select
+                          SelectProps={{ native: true }}
+                          size="small"
+                          sx={{ flex: 1 }}
+                          value={selectedFeatureForRole[role.id] || ''}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setSelectedFeatureForRole(prev => ({
+                              ...prev,
+                              [role.id]: e.target.value
+                            }));
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <option value="">Select a feature</option>
+                          {features.map((feature) => {
+                            const isAssigned = role.features.some(
+                              (f) => f.id === feature.id
+                            );
+                            return !isAssigned ? (
+                              <option key={feature.id} value={feature.id}>
+                                {feature.display_name || feature.name}
+                              </option>
+                            ) : null;
+                          })}
+                        </TextField>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          color="success"
+                          startIcon={<AddIcon />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (selectedFeatureForRole[role.id]) {
+                              handleAddFeature(role.id, selectedFeatureForRole[role.id]);
+                            }
+                          }}
+                          disabled={!selectedFeatureForRole[role.id] || loading}
+                          sx={{ whiteSpace: 'nowrap' }}
+                        >
+                          Add
+                        </Button>
+                      </Box>
                     </>
                   )}
                 </CardContent>

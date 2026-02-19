@@ -1,0 +1,74 @@
+# Logs
+*.log
+
+# Generated files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Exceptions to above rules.
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
+
+# Web build folder
+/web/
+
+# Android resources
+android/.gradle/
+android/.idea/
+android/local.properties
+android/gradle.properties
+android/*.apk
+android/*.aar
+android/*.ap_
+android/**/generatedPlugins.cmake
+android/**/flutter/generated_plugins.cmake
+
+# iOS resources
+ios/.symlinks/
+ios/.generated/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeralmodules.txt
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/flutter_assets/
+ios/Flutter/flutter_engine/
+ios/Pods/
+ios/Podfile.lock
+
+# Coverage
+coverage/
+
+# Symbols
+app.*.map.json
+
+# Obfuscation related
+app.*.symbols
+
+# Mac
+.DS_Store
+*.swp
+*.swo
+*~.nib
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+thumbs.db

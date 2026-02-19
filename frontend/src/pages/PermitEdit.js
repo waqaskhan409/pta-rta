@@ -88,6 +88,7 @@ const PermitEdit = () => {
     approved_routes: '',
     restrictions: '',
     assigned_to: '',
+    assignment_details: '',
   });
 
   const [permit, setPermit] = useState(null);
@@ -112,7 +113,10 @@ const PermitEdit = () => {
 
   // Check if user can change status (admins and assistants)
   // Handle case where user.role might be an object {id, name} or a string
-  const canChangeStatus = user?.is_staff || (user?.role?.name || user?.role || '').toLowerCase().trim() === 'assistant';
+  const canChangeStatus = user?.features?.some(f =>
+  (f.name?.toLowerCase() === 'permit_change_status' ||
+    f.toLowerCase?.() === 'permit_change_status')
+  );
 
   // Check if user is the assigned employee or admin
   const isAssignedEmployee = permit?.assigned_to === user?.id;
@@ -173,6 +177,7 @@ const PermitEdit = () => {
         approved_routes: permitRes.data.approved_routes || '',
         restrictions: permitRes.data.restrictions || '',
         assigned_to: permitRes.data.assigned_to || '',
+        assignment_details: permitRes.data.assignment_details || '',
       });
 
       // Process documents from API response
@@ -231,10 +236,11 @@ const PermitEdit = () => {
         approved_routes: formData.approved_routes,
         restrictions: formData.restrictions,
         assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : (permit?.assigned_to || null),
+        assignment_details: formData.assignment_details,
       };
 
       await apiClient.patch(`/permits/${permitId}/`, updateData);
-      
+
       // Upload any pending files
       if (pendingFiles.length > 0) {
         for (const pendingFile of pendingFiles) {
@@ -267,7 +273,7 @@ const PermitEdit = () => {
         }
         setPendingFiles([]); // Clear pending files after upload
       }
-      
+
       setSuccess('Permit updated successfully!');
       setTimeout(() => {
         navigate(`/permits/${permitId}`);
@@ -351,7 +357,7 @@ const PermitEdit = () => {
   const handleDeleteDocument = (docId) => {
     // Check if it's a pending file or an uploaded document
     const isPending = docId.toString().startsWith('pending_');
-    
+
     if (isPending) {
       // Remove from pending files
       setPendingFiles(prev => prev.filter(f => f.id !== docId));
@@ -365,10 +371,10 @@ const PermitEdit = () => {
         })
         .catch((err) => {
           console.error('Document delete error:', err);
-          const errorMessage = err.response?.data?.detail || 
-                              err.response?.data?.error || 
-                              err.message || 
-                              'Failed to delete document';
+          const errorMessage = err.response?.data?.detail ||
+            err.response?.data?.error ||
+            err.message ||
+            'Failed to delete document';
           setError(`Failed to delete document: ${errorMessage}`);
         });
     }
@@ -1295,6 +1301,20 @@ const PermitEdit = () => {
                     </Select>
                   </FormControl>
                 </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Assignment Details"
+                    name="assignment_details"
+                    value={formData.assignment_details}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Reviews documents, Verify registration details, Process approval"
+                    multiline
+                    rows={3}
+                    helperText="Explain what tasks the assigned employee should perform for this permit"
+                    variant="outlined"
+                  />
+                </Grid>
               </Grid>
             )}
 
@@ -1321,6 +1341,16 @@ const PermitEdit = () => {
                             {permit.assigned_to_role}
                           </Typography>
                         </Grid>
+                        {permit.assignment_details && (
+                          <Grid item xs={12}>
+                            <Typography variant="caption" sx={{ color: '#1b5e20' }}>
+                              <strong>Assignment Details:</strong>
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: '#2e7d32', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                              {permit.assignment_details}
+                            </Typography>
+                          </Grid>
+                        )}
                       </Grid>
                     </Paper>
                   </Grid>
