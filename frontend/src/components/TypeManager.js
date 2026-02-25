@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -92,11 +92,7 @@ function TypeManager({ title, endpoint }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  useEffect(() => {
-    fetchItems();
-  }, []);
-
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
       const response = await apiClient.get(endpoint);
@@ -108,7 +104,13 @@ function TypeManager({ title, endpoint }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [endpoint]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+
 
   const handleOpenDialog = (item = null) => {
     if (item) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Container,
   Paper,
@@ -29,14 +29,7 @@ function FeatureList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchFeatures();
-    if (user?.role?.id) {
-      fetchUserRoleFeatures();
-    }
-  }, [user?.role?.id]);
-
-  const fetchFeatures = async () => {
+  const fetchFeatures = useCallback(async () => {
     try {
       const response = await apiClient.get('/features/');
       setAllFeatures(response.data.results || response.data);
@@ -47,9 +40,9 @@ function FeatureList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchUserRoleFeatures = async () => {
+  const fetchUserRoleFeatures = useCallback(async () => {
     try {
       // Get role details to fetch associated features
       const response = await apiClient.get(`/roles/${user.role.id}/`);
@@ -57,7 +50,16 @@ function FeatureList() {
     } catch (err) {
       console.error('Error fetching user features:', err);
     }
-  };
+  }, [user?.role?.id]);
+
+  useEffect(() => {
+    fetchFeatures();
+    if (user?.role?.id) {
+      fetchUserRoleFeatures();
+    }
+  }, [user?.role?.id, fetchFeatures, fetchUserRoleFeatures]);
+
+
 
   const isFeatureEnabled = (featureId) => {
     return userFeatures.some(f => f.id === featureId || f === featureId);

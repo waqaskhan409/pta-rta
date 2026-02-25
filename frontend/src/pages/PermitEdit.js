@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -137,11 +137,7 @@ const PermitEdit = () => {
     });
   }, [user, canChangeStatus, permit, isAssignedEmployee, canEditForm]);
 
-  useEffect(() => {
-    fetchAllData();
-  }, [permitId]);
-
-  const fetchAllData = async () => {
+  const fetchAllData = useCallback(async () => {
     try {
       setLoading(true);
       const [permitRes, employeesRes, typesRes, vehiclesRes, docsRes] = await Promise.all([
@@ -158,48 +154,31 @@ const PermitEdit = () => {
         permit_type: permitRes.data.permit_type_id || '',
         vehicle_type: permitRes.data.vehicle_type_id || '',
         vehicle_number: permitRes.data.vehicle_number || '',
-        vehicle_make: permitRes.data.vehicle_make || '',
-        vehicle_model: permitRes.data.vehicle_model || '',
-        vehicle_year: permitRes.data.vehicle_year || '',
-        vehicle_capacity: permitRes.data.vehicle_capacity || '',
-        owner_name: permitRes.data.owner_name || '',
-        owner_email: permitRes.data.owner_email || '',
-        owner_phone: permitRes.data.owner_phone || '',
-        owner_address: permitRes.data.owner_address || '',
-        owner_cnic: permitRes.data.owner_cnic || '',
-        status: permitRes.data.status || 'pending',
+        status: permitRes.data.status || '',
+        assigned_to: permitRes.data.assigned_to || '',
         valid_from: permitRes.data.valid_from || '',
         valid_to: permitRes.data.valid_to || '',
-        description: permitRes.data.description || '',
-        remarks: permitRes.data.remarks || '',
-        approved_routes: permitRes.data.approved_routes || '',
-        restrictions: permitRes.data.restrictions || '',
-        assigned_to: permitRes.data.assigned_to || '',
-        assignment_details: permitRes.data.assignment_details || '',
+        notes: permitRes.data.notes || '',
+        business_name: permitRes.data.business_name || '',
+        business_location: permitRes.data.business_location || '',
+        plate_number_issued_by: permitRes.data.plate_number_issued_by || '',
       });
-
-      // Process documents from API response
-      const docsList = (docsRes.data.results || docsRes.data || []).map(doc => ({
-        id: doc.id,
-        name: doc.filename,
-        size: doc.file_size,
-        type: doc.file,
-        uploadedAt: new Date(doc.uploaded_at).toLocaleString(),
-        uploadedBy: doc.uploaded_by,
-      }));
-      setDocuments(docsList);
-
-      setEmployees(employeesRes.data || []);
-      setPermitTypes(typesRes.data.results || []);
-      setVehicleTypes(vehiclesRes.data.results || []);
+      setEmployees(employeesRes.data.results || employeesRes.data);
+      setPermitTypes(typesRes.data.results || typesRes.data);
+      setVehicleTypes(vehiclesRes.data.results || vehiclesRes.data);
+      setDocuments(docsRes.data.results || docsRes.data);
       setError('');
     } catch (err) {
-      setError('Failed to load data');
+      setError('Failed to load permit data');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [permitId]);
+
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

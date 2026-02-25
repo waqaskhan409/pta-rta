@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Badge,
   IconButton,
@@ -34,7 +34,7 @@ const NotificationCenter = () => {
   const open = Boolean(anchorEl);
 
   // Fetch unread count
-  const fetchUnreadCount = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     if (!isAuthenticated || !token) {
       console.warn('Not authenticated, skipping fetch');
       return;
@@ -53,7 +53,7 @@ const NotificationCenter = () => {
     } catch (err) {
       console.error('Error fetching unread count:', err.response?.data || err.message);
     }
-  };
+  }, [isAuthenticated, token]);
 
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -151,7 +151,7 @@ const NotificationCenter = () => {
 
       return () => clearInterval(interval);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, fetchUnreadCount]);
 
   if (!isAuthenticated) {
     return null;

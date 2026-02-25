@@ -24,7 +24,7 @@ const PrintCertificate = ({ permit, onClose }) => {
     if (!permit) return '';
     const randomSuffix = Math.random().toString(36).substr(2, 5).toUpperCase();
     return `RTA-${permit.id}-${permit.permit_type?.code || 'XX'}-${randomSuffix}`;
-  }, [permit?.id, permit?.permit_type?.code]);
+  }, [permit]);
 
   if (!permit) return null;
 

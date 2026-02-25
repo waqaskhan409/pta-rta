@@ -166,7 +166,7 @@ function PermitList() {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [searchTerm]);
+  }, [searchTerm, fetchPermits]);
 
   // Fetch permits when user changes (login/logout) or component mounts
   useEffect(() => {
@@ -191,7 +191,7 @@ function PermitList() {
       setAssignedFilter('all');
       initializedAssignedFilterRef.current = false;
     }
-  }, [user?.id, fetchPermits, fetchPermitTypes, fetchAssignedUsers]);
+  }, [user, fetchPermits, fetchPermitTypes, fetchAssignedUsers]);
 
   // Fetch permits when non-search filters change (without debounce)
   useEffect(() => {

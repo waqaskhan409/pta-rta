@@ -142,7 +142,7 @@ function NewPermit() {
       setRenewalPermitId(renewalId);
       fetchExpiredPermitAndPrefill(renewalId, validFrom, validTo);
     }
-  }, [user]);
+  }, [user, renewalPermitId]);
 
   // Fetch available drafts on component mount
   useEffect(() => {
@@ -150,7 +150,7 @@ function NewPermit() {
       // Only show drafts if not in a renewal flow
       fetchUserDrafts();
     }
-  }, []);
+  }, [user, renewalPermitId]);
 
   const fetchPermitTypes = async () => {
     try {

@@ -283,7 +283,7 @@ const PermitModal = ({ open, permit, onClose, onSave, isEditMode = false, showHi
     if (open && effectiveEditMode) {
       fetchEligibleUsers();
     }
-  }, [permit, open, showHistoryTab, isEditMode, effectiveEditMode]);
+  }, [permit, open, showHistoryTab, isEditMode, effectiveEditMode, user]);
 
   // Auto-open print certificate when showPrintCertificateOnOpen is true
   // Only open if NOT in edit/duplicate mode

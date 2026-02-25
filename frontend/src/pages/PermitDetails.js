@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -52,13 +52,7 @@ const PermitDetails = () => {
   const [newValidTo, setNewValidTo] = useState('');
   const [reapplyError, setReapplyError] = useState('');
 
-  useEffect(() => {
-    fetchPermitDetails();
-    fetchPermitHistory();
-    fetchPermitDocuments();
-  }, [permitId]);
-
-  const fetchPermitDetails = async () => {
+  const fetchPermitDetails = useCallback(async () => {
     try {
       const response = await apiClient.get(`/permits/${permitId}/`);
       setPermit(response.data);
@@ -67,9 +61,9 @@ const PermitDetails = () => {
       setError('Failed to load permit details');
       console.error(err);
     }
-  };
+  }, [permitId]);
 
-  const fetchPermitHistory = async () => {
+  const fetchPermitHistory = useCallback(async () => {
     try {
       const response = await apiClient.get(`/permits/${permitId}/history/`);
       setHistory(response.data.history);
@@ -78,16 +72,22 @@ const PermitDetails = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [permitId]);
 
-  const fetchPermitDocuments = async () => {
+  const fetchPermitDocuments = useCallback(async () => {
     try {
       const response = await apiClient.get(`/permit-documents/?permit_id=${permitId}`);
-      setDocuments(response.data.results || response.data || []);
+      setDocuments(response.data.results || response.data);
     } catch (err) {
-      console.error('Failed to load documents', err);
+      console.error('Failed to load documents:', err);
     }
-  };
+  }, [permitId]);
+
+  useEffect(() => {
+    fetchPermitDetails();
+    fetchPermitHistory();
+    fetchPermitDocuments();
+  }, [fetchPermitDetails, fetchPermitHistory, fetchPermitDocuments]);
 
   const handleReapplyClick = () => {
     // Set default dates
