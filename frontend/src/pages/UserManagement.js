@@ -26,8 +26,6 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
 } from '@mui/icons-material';
 import apiClient from '../services/apiClient';
 
@@ -35,7 +33,6 @@ const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -89,7 +86,7 @@ const UserManagement = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const response = await apiClient.post('/users/create-user/', formData);
+      await apiClient.post('/users/create-user/', formData);
       setSuccess('User created successfully');
       setShowModal(false);
       setFormData({
