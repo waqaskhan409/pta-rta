@@ -32,7 +32,6 @@ import {
   Edit as EditIcon,
   Close as CloseIcon,
   DirectionsCar as VehicleIcon,
-  Info as InfoIcon,
   DateRange as CalendarIcon,
   Description as DescriptionIcon,
   CloudUpload as CloudUploadIcon,

@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../services/apiClient';
 import PermitModal from '../components/PermitModal';
-import { isColumnVisible, getVisibleColumnCount, canEditThisPermit, canEditPermits, hasFeature } from '../utils/permissions';
+import { isColumnVisible, getVisibleColumnCount, hasFeature } from '../utils/permissions';
 import '../styles/page.css';
 
 function PermitList() {
@@ -56,9 +56,6 @@ function PermitList() {
 
   // Track if we've initialized the assigned filter to avoid resetting on every render
   const initializedAssignedFilterRef = React.useRef(false);
-
-  // Permission system using backend-provided features
-  const hasEditPermission = canEditPermits(user);
 
   const fetchPermitTypes = useCallback(async () => {
     try {
@@ -220,11 +217,6 @@ function PermitList() {
       setShowPrintCertificateOnOpen(isPrint);
       setModalOpen(true);
     }
-  };
-
-  const canUserEditPermit = (permit) => {
-    // Use the imported permission utility - wrapper that passes current user
-    return canEditThisPermit(user, permit);
   };
 
   const handleViewHistory = async (permit) => {
