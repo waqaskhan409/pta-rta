@@ -31,7 +31,6 @@ function PermitList() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [permits, setPermits] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -93,11 +92,6 @@ function PermitList() {
 
   const fetchPermits = useCallback(async (pageNum = 0) => {
     try {
-      // Only set loading for initial load, not for search/filter updates
-      if (isInitialLoad) {
-        setLoading(true);
-      }
-
       // Build query parameters for backend filtering
       const params = {
         page: pageNum + 1, // Backend uses 1-based pagination
@@ -155,7 +149,7 @@ function PermitList() {
         setIsInitialLoad(false);
       }
     } finally {
-      setLoading(false);
+      // Loading state removed - not used in render
     }
   }, [statusFilter, authorityFilter, typeFilter, assignedFilter, searchTerm, rowsPerPage, isInitialLoad]);
 
@@ -225,30 +219,6 @@ function PermitList() {
       setIsEditMode(false);
       setShowPrintCertificateOnOpen(isPrint);
       setModalOpen(true);
-    }
-  };
-
-  const handleEditPermit = async (permit) => {
-    // Check if user has permission to edit
-    if (!hasEditPermission) {
-      setError('You do not have permission to edit permits');
-      return;
-    }
-
-    // Check if permit can be edited by current user (assigned role check)
-    const isCurrentUserAssigned = canUserEditPermit(permit);
-    if (!isCurrentUserAssigned) {
-      setError(`Only ${permit.assigned_to_role?.toUpperCase() || 'assigned role'} users can edit this permit`);
-      return;
-    }
-
-    // Navigate to permit details page for editing
-    try {
-      const permitId = permit.id || permit.pk;
-      navigate(`/permit-details/${permitId}`);
-    } catch (err) {
-      console.error('Failed to navigate to permit details:', err);
-      setError('Failed to open permit for editing');
     }
   };
 

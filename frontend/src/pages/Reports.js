@@ -19,7 +19,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  TextField,
   DialogActions,
   CircularProgress,
   Alert,
@@ -28,7 +27,6 @@ import {
   Stack,
 } from '@mui/material';
 import {
-  Download as DownloadIcon,
   Assessment as AnalyticsIcon,
   History as HistoryIcon,
   Assignment as AssignmentIcon,
@@ -41,8 +39,6 @@ import {
   TimerOff as ExpiringSoonIcon,
 } from '@mui/icons-material';
 import {
-  LineChart,
-  Line,
   BarChart,
   Bar,
   PieChart,
@@ -58,11 +54,6 @@ import {
 import apiClient from '../services/apiClient';
 
 // Helper functions for metrics calculation
-const calculateTrend = (current, previous) => {
-  if (!previous || previous === 0) return 0;
-  return Math.round(((current - previous) / previous) * 100);
-};
-
 const getTrendIndicator = (trend) => {
   if (trend > 0) return { symbol: '↑', color: '#4caf50', label: 'increased' };
   if (trend < 0) return { symbol: '↓', color: '#f44336', label: 'decreased' };
