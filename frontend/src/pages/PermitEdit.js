@@ -17,7 +17,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Divider,
   Chip,
   Paper,
   Tabs,

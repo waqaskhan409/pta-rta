@@ -119,14 +119,6 @@ function Dashboard() {
     }
   };
 
-  const fetchUserFeatures = async () => {
-    try {
-      const response = await apiClient.get(`/roles/${user.role.id}/`);
-      setUserFeatures(response.data.features || []);
-    } catch (err) {
-      console.error('Error fetching user features:', err);
-    }
-  };
 
 
 

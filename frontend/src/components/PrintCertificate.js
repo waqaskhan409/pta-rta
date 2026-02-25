@@ -3,9 +3,6 @@ import { QRCodeCanvas } from 'qrcode.react';
 import {
   Box,
   Button,
-  Grid,
-  Card,
-  CardContent,
   Typography,
   ButtonGroup
 } from '@mui/material';
@@ -72,8 +69,6 @@ const PrintCertificate = ({ permit, onClose }) => {
     element.click();
     document.body.removeChild(element);
   };
-
-  const isActive = permit.status === 'active';
 
   return (
     <div className="print-certificate-container">

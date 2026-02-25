@@ -27,12 +27,11 @@ import {
   NavigateBefore as BackIcon,
   NavigateNext as NextIcon,
   CheckCircle as SubmitIcon,
-  Add as AddIcon,
   Print as PrintIcon,
 } from '@mui/icons-material';
 import apiClient from '../services/apiClient';
 import { useAuth } from '../context/AuthContext';
-import { chalanAPI, vehicleTypeAPI } from '../services/chalanService';
+import { chalanAPI } from '../services/chalanService';
 import '../styles/page.css';
 
 function NewPermit() {
@@ -105,8 +104,6 @@ function NewPermit() {
     remarks: '',
   });
   const [autoCalcFee, setAutoCalcFee] = useState(true);
-  const [selectedVehicleType, setSelectedVehicleType] = useState(null);
-  const [chalanLoading, setChalanLoading] = useState(false);
   const [userDrafts, setUserDrafts] = useState([]);
   const [showDraftsDialog, setShowDraftsDialog] = useState(false);
   const [loadingDrafts, setLoadingDrafts] = useState(false);
@@ -413,30 +410,6 @@ function NewPermit() {
       ...chalanData,
       [name]: processedValue,
     });
-  };
-
-  const validateChalanForm = () => {
-    if (!chalanData.owner_name.trim()) {
-      setMessage({ type: 'error', text: 'Owner name is required' });
-      return false;
-    }
-    if (!chalanData.owner_cnic.trim()) {
-      setMessage({ type: 'error', text: 'Owner CNIC is required' });
-      return false;
-    }
-    if (!chalanData.car_number.trim()) {
-      setMessage({ type: 'error', text: 'Car number is required' });
-      return false;
-    }
-    if (!chalanData.vehicle_type) {
-      setMessage({ type: 'error', text: 'Vehicle type is required' });
-      return false;
-    }
-    if (!chalanData.violation_description.trim()) {
-      setMessage({ type: 'error', text: 'Fee description is required' });
-      return false;
-    }
-    return true;
   };
 
   const handleSubmit = async () => {
@@ -1009,18 +982,6 @@ function NewPermit() {
       alert('Please fill in all required fields before printing.');
       return;
     }
-
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-
-    const currentTime = new Date().toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
 
     const getChalanCopy = (type) => {
       const titles = {

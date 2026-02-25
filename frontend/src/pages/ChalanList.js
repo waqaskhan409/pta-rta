@@ -23,10 +23,6 @@ import {
 } from '@mui/material';
 import {
   Visibility as ViewIcon,
-  Add as AddIcon,
-  Edit as EditIcon,
-  DoneAll as PaidIcon,
-  Cancel as CancelIcon,
   PriceChange as FeeIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -134,8 +130,8 @@ function ChalanList() {
   };
 
   // Check if user has permission to manage vehicle fees
-  const canManageFees = user && user.features &&
-    user.features.some(f => f.name === 'chalan_vehicle_fee_manage') ||
+  const canManageFees = (user && user.features &&
+    user.features.some(f => f.name === 'chalan_vehicle_fee_manage')) ||
     user?.role?.name === 'admin';
 
   const getVehicleTypeName = (vehicleTypeId) => {

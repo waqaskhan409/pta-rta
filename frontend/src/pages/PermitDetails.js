@@ -3,7 +3,6 @@ import {
   Box,
   Card,
   CardContent,
-  CardHeader,
   Grid,
   Tabs,
   Tab,
@@ -194,11 +193,6 @@ const PermitDetails = () => {
     return false;
   };
 
-  const downloadPDF = () => {
-    // This would require a backend endpoint to generate PDF
-    alert('PDF download feature coming soon');
-  };
-
   const downloadReportCSV = () => {
     if (!permit) return;
 
@@ -267,7 +261,6 @@ const PermitDetails = () => {
     );
   }
 
-  const isValid = permit.status === 'active';
   const daysUntilExpiry = permit.valid_to ? Math.ceil((new Date(permit.valid_to) - new Date()) / (1000 * 60 * 60 * 24)) : null;
 
   return (

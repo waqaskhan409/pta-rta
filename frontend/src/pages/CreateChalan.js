@@ -14,13 +14,11 @@ import {
   Checkbox,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { chalanAPI, vehicleTypeAPI } from '../services/chalanService';
 import '../styles/page.css';
 
 function CreateChalan() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -39,11 +37,6 @@ function CreateChalan() {
     fees_amount: '',
     issue_location: '',
     remarks: '',
-  });
-
-  const [suggestions, setSuggestions] = useState({
-    vehicles: [],
-    permissions: [],
   });
 
   // Fetch vehicle types

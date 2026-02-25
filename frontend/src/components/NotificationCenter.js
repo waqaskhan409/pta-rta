@@ -3,11 +3,9 @@ import {
   Badge,
   IconButton,
   Menu,
-  MenuItem,
   Typography,
   List,
   ListItem,
-  ListItemText,
   ListItemButton,
   Divider,
   Box,
@@ -75,28 +73,6 @@ const NotificationCenter = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching notifications:', err.response?.data || err.message);
-      setError('Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch unread notifications
-  const fetchUnreadNotifications = async () => {
-    if (!isAuthenticated || !token) return;
-
-    setLoading(true);
-    try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/unread/`, {
-        headers: {
-          Authorization: `Token ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      setNotifications(response.data);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching unread notifications:', err.response?.data || err.message);
       setError('Failed to load notifications');
     } finally {
       setLoading(false);

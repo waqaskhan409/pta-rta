@@ -14,16 +14,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Chip,
 } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { chalanAPI, vehicleTypeAPI } from '../services/chalanService';
 import {
   Edit as EditIcon,
@@ -36,7 +29,6 @@ import '../styles/page.css';
 function ChalanDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [chalan, setChalan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

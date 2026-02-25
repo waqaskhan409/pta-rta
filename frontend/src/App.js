@@ -31,7 +31,6 @@ import {
   PrivacyTip as PrivacyIcon,
   LocalShipping as VehicleIcon,
   Assessment as ReportIcon,
-  Description as DetailsIcon,
   Search as SearchIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
@@ -98,7 +97,6 @@ function AppContent() {
   };
 
   // Check if user can access reports - has report_view feature or is admin
-  const canAccessReports = hasFeature('report_view') || isAdmin;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
