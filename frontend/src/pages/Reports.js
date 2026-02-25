@@ -87,7 +87,6 @@ const Reports = () => {
   const [dashboardTabValue, setDashboardTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   // Statistics
   const [detailedStats, setDetailedStats] = useState(null);
@@ -101,7 +100,6 @@ const Reports = () => {
   // History
   const [historyData, setHistoryData] = useState([]);
   const [historyDialog, setHistoryDialog] = useState(false);
-  const [selectedPermitId, setSelectedPermitId] = useState(null);
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82ca9d', '#ffc658'];
 
@@ -173,22 +171,6 @@ const Reports = () => {
       setError('');
     } catch (err) {
       setError('Failed to load expiring permits report');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPermitHistory = async (permitId) => {
-    setLoading(true);
-    try {
-      const response = await apiClient.get(`/permits/${permitId}/history/`);
-      setHistoryData(response.data.history);
-      setSelectedPermitId(permitId);
-      setHistoryDialog(true);
-      setError('');
-    } catch (err) {
-      setError('Failed to load permit history');
       console.error(err);
     } finally {
       setLoading(false);
@@ -304,7 +286,6 @@ const Reports = () => {
   // Dashboard Tab
   const renderDashboard = () => {
     const metrics = calculateMetric(detailedStats) || {};
-    const total = detailedStats?.overall_stats?.total_permits || 0;
 
     return (
       <Box>
