@@ -53,9 +53,13 @@ import PrintCertificate from './PrintCertificate';
 
 // Helper function to construct full media URL
 const getMediaUrl = (filePath) => {
-  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const defaultBackendUrl = 'http://ptarta-backend-hpscnq-93202e-76-13-212-186.traefik.me';
+  const rawApiUrl = process.env.REACT_APP_API_URL || defaultBackendUrl;
+  const baseUrl = rawApiUrl
+    .replace(/\/api\/?$/, '')
+    .replace(/\/$/, '');
   // Files are stored directly in config folder, not in media subfolder
-  return `${baseUrl}/${filePath}`;
+  return `${baseUrl}/${String(filePath).replace(/^\//, '')}`;
 };
 
 function TabPanel(props) {

@@ -24,7 +24,11 @@ import {
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const DEFAULT_BACKEND_URL = 'http://ptarta-backend-hpscnq-93202e-76-13-212-186.traefik.me';
+const RAW_API_URL = process.env.REACT_APP_API_URL || DEFAULT_BACKEND_URL;
+const API_BASE_URL = RAW_API_URL.endsWith('/api')
+  ? RAW_API_URL
+  : `${RAW_API_URL.replace(/\/$/, '')}/api`;
 
 const NotificationCenter = () => {
   const { isAuthenticated, token } = useAuth();

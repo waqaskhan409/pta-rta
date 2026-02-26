@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const DEFAULT_BACKEND_URL = 'http://ptarta-backend-hpscnq-93202e-76-13-212-186.traefik.me';
+const RAW_API_URL = process.env.REACT_APP_API_URL || DEFAULT_BACKEND_URL;
+const API_BASE_URL = RAW_API_URL.endsWith('/api')
+  ? RAW_API_URL
+  : `${RAW_API_URL.replace(/\/$/, '')}/api`;
 const API_KEY = process.env.REACT_APP_API_KEY || 'sk-dev-12345678901234567890';
 
 const apiClient = axios.create({
