@@ -3,18 +3,6 @@ providers = ["python"]
 [variables]
 PYTHON_VERSION = "3.10"
 
-[phases.setup]
-nixPkgs = ["python310Full"]
-
-[phases.install]
-cmds = [
-  "python -m ensurepip --upgrade || true",
-  "pip3 --version || true",
-  "pip3 install --upgrade pip || python -m pip install --upgrade pip",
-  "pip3 install -r requirements.txt || python -m pip install -r requirements.txt",
-  "pip3 install gunicorn || python -m pip install gunicorn"
-]
-
 [phases.build]
 cmds = [
   "python manage.py collectstatic --noinput",
