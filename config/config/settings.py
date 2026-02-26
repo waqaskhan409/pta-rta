@@ -200,6 +200,9 @@ REST_FRAMEWORK = {
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:8000,http://10.0.2.2:8000,http://10.0.2.2').split(',')]
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://([a-zA-Z0-9-]+\.)*traefik\.me$",
+]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -230,6 +233,12 @@ CORS_EXPOSE_HEADERS = [
     'expires',
     'pragma'
 ]
+
+# CSRF trusted origins (required for some authenticated POST requests behind proxies)
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://localhost:3000,http://localhost:8000,http://*.traefik.me,https://*.traefik.me'
+).split(',')]
 
 # Email Configuration
 # Configure email backend for sending notifications
