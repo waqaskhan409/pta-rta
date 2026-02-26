@@ -3,11 +3,14 @@ providers = ["python"]
 [variables]
 PYTHON_VERSION = "3.10"
 
+[phases.setup]
+nixPkgs = ["python310", "python310Packages.pip"]
+
 [phases.install]
 cmds = [
-  "pip install --upgrade pip",
-  "pip install -r requirements.txt",
-  "pip install gunicorn"
+  "python -m pip install --upgrade pip",
+  "python -m pip install -r requirements.txt",
+  "python -m pip install gunicorn"
 ]
 
 [phases.build]
