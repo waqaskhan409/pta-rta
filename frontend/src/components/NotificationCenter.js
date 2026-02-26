@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Badge,
   IconButton,
   Menu,
+  MenuItem,
   Typography,
   List,
   ListItem,
+  ListItemText,
   ListItemButton,
   Divider,
   Box,
@@ -34,7 +36,7 @@ const NotificationCenter = () => {
   const open = Boolean(anchorEl);
 
   // Fetch unread count
-  const fetchUnreadCount = useCallback(async () => {
+  const fetchUnreadCount = async () => {
     if (!isAuthenticated || !token) {
       console.warn('Not authenticated, skipping fetch');
       return;
@@ -53,7 +55,7 @@ const NotificationCenter = () => {
     } catch (err) {
       console.error('Error fetching unread count:', err.response?.data || err.message);
     }
-  }, [isAuthenticated, token]);
+  };
 
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -73,6 +75,28 @@ const NotificationCenter = () => {
       setError(null);
     } catch (err) {
       console.error('Error fetching notifications:', err.response?.data || err.message);
+      setError('Failed to load notifications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch unread notifications
+  const fetchUnreadNotifications = async () => {
+    if (!isAuthenticated || !token) return;
+
+    setLoading(true);
+    try {
+      const response = await axios.get(`${API_BASE_URL}/notifications/unread/`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      setNotifications(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching unread notifications:', err.response?.data || err.message);
       setError('Failed to load notifications');
     } finally {
       setLoading(false);
@@ -151,7 +175,7 @@ const NotificationCenter = () => {
 
       return () => clearInterval(interval);
     }
-  }, [isAuthenticated, fetchUnreadCount]);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return null;

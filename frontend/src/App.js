@@ -31,6 +31,7 @@ import {
   PrivacyTip as PrivacyIcon,
   LocalShipping as VehicleIcon,
   Assessment as ReportIcon,
+  Description as DetailsIcon,
   Search as SearchIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
@@ -60,7 +61,6 @@ import FeatureList from './pages/FeatureList';
 import TypesManagement from './pages/TypesManagement';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import AboutUs from './pages/AboutUs';
-import Profile from './pages/Profile';
 
 const drawerWidth = 240;
 const collapsedDrawerWidth = 70;
@@ -97,6 +97,7 @@ function AppContent() {
   };
 
   // Check if user can access reports - has report_view feature or is admin
+  const canAccessReports = hasFeature('report_view') || isAdmin;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -117,7 +118,6 @@ function AppContent() {
 
   const navigationItems = [
     { label: 'Dashboard', icon: <DashboardIcon />, path: '/', adminOnly: false },
-    { label: 'My Profile', icon: <AccountIcon />, path: '/profile', adminOnly: false },
     { label: 'View Permits', icon: <PermitIcon />, path: '/permits', adminOnly: false },
     { label: 'New Permit', icon: <AddIcon />, path: '/new-permit', adminOnly: false, excludeEmployees: true },
     { label: 'Search Permits', icon: <SearchIcon />, path: '/search', adminOnly: false },
@@ -367,17 +367,6 @@ function AppContent() {
                         </Typography>
                       </MenuItem>
                       <Divider />
-                      <MenuItem
-                        onClick={() => {
-                          handleMenuClose();
-                          setActivePath('/profile');
-                          window.history.pushState(null, '', '/profile');
-                          window.dispatchEvent(new PopStateEvent('popstate'));
-                        }}
-                      >
-                        <AccountIcon sx={{ mr: 1, fontSize: 20 }} />
-                        <Typography variant="body2">My Profile</Typography>
-                      </MenuItem>
                       <MenuItem onClick={handleLogout}>
                         <LogoutIcon sx={{ mr: 1, fontSize: 20 }} />
                         <Typography variant="body2">Logout</Typography>
@@ -451,14 +440,6 @@ function AppContent() {
                   element={
                     <ProtectedRoute>
                       <Dashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
                     </ProtectedRoute>
                   }
                 />
